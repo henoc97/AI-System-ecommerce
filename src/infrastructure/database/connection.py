@@ -11,7 +11,7 @@ class DatabaseConnection:
 
     def _initialize_connection(self):
         db_config = {
-            'host': 'localhost',
+            'host': '172.31.80.1',
             'database': 'ecommerce',
             'user': 'postgres',
             'password': 'henoc2004'

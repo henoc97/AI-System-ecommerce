@@ -2,11 +2,13 @@
 from application.helper.to_csv import preprocess_data
 from infrastructure.data_lake.setup.automate_ingestion import upload_file_to_s3
 from application.services.user_services import UserServices
+from infrastructure.repositories_impl.user_repository_impl import UserRepositoryImpl
 
 
 class LoadUserToDatalake:
     def __init__(self):
-        self.user_services = UserServices()
+        user_repository = UserRepositoryImpl()
+        self.user_services = UserServices(user_repository)
         
     def execute(self):
         try:
