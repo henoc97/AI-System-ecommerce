@@ -14,7 +14,8 @@ class LoadOrderToDatalake:
         try:
             orders = self.order_services.get_all_orders()
             output_file = 'src/infrastructure/data_lake/raw/orders/orders.csv'
-            cols = ['id', 'userId', 'shopId', 'status', 'totalAmount', 'paymentId', 'trackingNumber', 'shippingMethod', 'createdAt',     'updatedAt']
+            cols = ['id', 'userId', 'shopId', 'status', 'totalAmount', 'paymentId', 'trackingNumber', 'shippingMethod', 'createdAt', 'updatedAt']
+            
             preprocess_data(orders, cols, output_file)
             upload_file_to_s3(output_file, 'raw/orders')
         except Exception as e:
