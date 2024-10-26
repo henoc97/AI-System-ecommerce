@@ -13,7 +13,7 @@ class LoadUserToDatalake:
     def execute(self):
         try:
             users = self.user_services.get_all_users()
-            output_file = 'users.csv'
+            output_file = 'src/infrastructure/data_lake/raw/users/users.csv'
             cols = ['id', 'name', 'email', 'role', 'created_at', 'updated_at']
             preprocess_data(users, cols, output_file)
             upload_file_to_s3(output_file, 'raw/users')

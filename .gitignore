@@ -1,3 +1,6 @@
 /monenv
 /__pycache__
 *.pyc
+.vscode
+.csv
+.env

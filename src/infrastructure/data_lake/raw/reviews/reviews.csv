@@ -1,0 +1,19 @@
+id,productId,userId,rating,comment,created_at,flagged,verified
+1,1,5,5,"Excellent product, highly recommend!",2024-10-26 01:35:01.925000,False,True
+2,2,7,4,Good value for the price.,2024-10-26 01:35:01.925000,False,True
+3,3,11,3,"Average quality, expected better.",2024-10-26 01:35:01.925000,False,True
+4,4,6,5,"Fantastic, works perfectly!",2024-10-26 01:35:01.925000,False,True
+5,5,9,2,"Not satisfied, had issues.",2024-10-26 01:35:01.925000,False,True
+6,6,12,4,"Good product, but could be improved.",2024-10-26 01:35:01.925000,False,True
+7,8,8,5,Beautiful and comfortable!,2024-10-26 01:35:01.925000,False,True
+8,9,14,3,Material is not as expected.,2024-10-26 01:35:01.925000,False,True
+9,10,19,4,"Nice design, fits well.",2024-10-26 01:35:01.925000,False,True
+10,11,13,5,"Perfect fit, love it!",2024-10-26 01:35:01.925000,False,True
+11,12,15,2,Not worth the price.,2024-10-26 01:35:01.925000,False,True
+12,13,18,4,Stylish and affordable.,2024-10-26 01:35:01.925000,False,True
+13,14,17,5,Beautiful craftsmanship!,2024-10-26 01:35:01.925000,False,True
+14,15,20,3,Colors are not as vibrant.,2024-10-26 01:35:01.925000,False,True
+15,16,16,4,Adds charm to my home.,2024-10-26 01:35:01.925000,False,True
+16,17,10,5,Absolutely love it!,2024-10-26 01:35:01.925000,False,True
+17,18,7,4,"Good quality, but a bit pricey.",2024-10-26 01:35:01.925000,False,True
+18,19,9,3,Expected better quality.,2024-10-26 01:35:01.925000,False,True

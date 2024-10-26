@@ -1,8 +1,5 @@
 id,name,email,role,created_at,updated_at
-1,komla.attipoe@example.com,hashed_password_1,Komla Attipoe,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
-2,akouvi.dossou@example.com,hashed_password_2,Akouvi Dossou,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 3,yawovi.amouzou@example.com,hashed_password_3,Yawovi Amouzou,ADMIN,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
-4,mawuena.abotsi@example.com,hashed_password_4,Mawuena Abotsi,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 5,elom.ayayi@example.com,hashed_password_5,Elom Ayayi,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 6,kpokpo.ademenou@example.com,hashed_password_6,Kpokpo Ademenou,ADMIN,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 7,tchalawou.gnassingbe@example.com,hashed_password_7,Tchalawou Gnassingbe,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
@@ -19,3 +16,6 @@ id,name,email,role,created_at,updated_at
 18,senam.soglo@example.com,hashed_password_18,Senam Soglo,ADMIN,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 19,kpade.nayo@example.com,hashed_password_19,Kpade Nayo,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
 20,dovi.kougan@example.com,hashed_password_20,Dovi Kougan,CLIENT,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
+1,komla.attipoe@example.com,hashed_password_1,Komla Attipoe,SELLER,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
+2,akouvi.dossou@example.com,hashed_password_2,Akouvi Dossou,SELLER,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
+4,mawuena.abotsi@example.com,hashed_password_4,Mawuena Abotsi,SELLER,2024-10-25 13:14:18.681000,2024-10-25 13:14:18.681000
