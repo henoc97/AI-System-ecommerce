@@ -25,13 +25,13 @@ print(f"Bucket {bucket_name} created with server-side encryption")
 # List of folders to be created within the bucket
 folders = [
     "raw/users/",
-    "raw/order-items/",
+    "raw/order_items/",
     "raw/orders/",
     "raw/products/",
     "raw/reviews/",
     "raw/interactions/",
     "processed/users/",
-    "processed/order-items/",
+    "processed/order_items/",
     "processed/orders/",
     "processed/products/",
     "processed/reviews/",

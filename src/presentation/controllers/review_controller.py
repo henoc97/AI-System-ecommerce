@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from application.use_cases.user_use_cas.load_review_to_datalake import LoadReviewToDatalake
+from application.use_cases.review_use_cases.load_review_to_datalake import LoadReviewToDatalake
 
 
 review_controller = Blueprint('review_controller', __name__)

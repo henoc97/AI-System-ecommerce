@@ -4,7 +4,7 @@ import os
 # Ajoutez le chemin du répertoire parent au sys.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from application.use_cases.user_use_cas.load_user_to_datalake import LoadUserToDatalake
+from application.use_cases.user_use_cases.load_user_to_datalake import LoadUserToDatalake
 from flask import Blueprint, jsonify
 
 user_controller = Blueprint('user_controller', __name__)

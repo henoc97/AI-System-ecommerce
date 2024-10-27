@@ -2,7 +2,7 @@
 
 from flask import Blueprint, jsonify
 
-from application.use_cases.user_use_cas.load_interaction_to_datalake import LoadInteractionToDatalake
+from application.use_cases.interaction_use_cases.load_interaction_to_datalake import LoadInteractionToDatalake
 
 
 interaction_controller = Blueprint('interaction_controller', __name__)

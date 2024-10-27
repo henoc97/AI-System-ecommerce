@@ -1,7 +1,5 @@
-import boto3
 import pandas as pd
 import numpy as np
-from io import StringIO
 from sklearn.feature_extraction.text import TfidfVectorizer
 from datetime import datetime
 

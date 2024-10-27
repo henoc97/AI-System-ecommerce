@@ -2,7 +2,7 @@
 
 from flask import Blueprint, jsonify
 
-from application.use_cases.user_use_cas.load_order_item_to_datalake import LoadOrderItemToDatalake
+from application.use_cases.order_item_use_cases.load_order_item_to_datalake import LoadOrderItemToDatalake
 
 
 order_item_controller = Blueprint('order_item_controller', __name__)

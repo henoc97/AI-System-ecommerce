@@ -2,10 +2,10 @@ import pandas as pd
 from transformers import pipeline
 
 # NPL hugging face pipeline : sentiment-analysis
-sentiment_analyzer = pipeline("sentiment-analysis")
+sentiment_analyzer = pipeline('sentiment-analysis', model="nlptown/bert-base-multilingual-uncased-sentiment")
 
 
-def transform_order_item(df: pd.DataFrame) -> pd.DataFrame | None:
+def transform_review(df: pd.DataFrame) -> pd.DataFrame | None:
     try:
         # Calculate the average rating per product
         df['average_rating'] = df.groupby('productId')['rating'].transform('mean')

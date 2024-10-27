@@ -1,6 +1,6 @@
 
 from flask import Blueprint, jsonify
-from application.use_cases.user_use_cas.load_product_to_datalake import LoadProductToDatalake
+from application.use_cases.product_use_cases.load_product_to_datalake import LoadProductToDatalake
 
 
 product_controller = Blueprint('product_controller', __name__)
