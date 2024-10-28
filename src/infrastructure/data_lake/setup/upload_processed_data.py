@@ -1,30 +1,16 @@
-import boto3
-import pandas as pd
-from io import StringIO
+import os
 
-# Création d'un client S3
-s3_client = boto3.client("s3", endpoint_url="http://localhost:4566")
-bucket_name = "ecommerce-datalake"
-
+bucket_base_url = os.getenv("BUCKET_BASE_URL")
 def upload_processed_data(df, processed_key):
     try:
-        # Vérifier le contenu du DataFrame
         print("DataFrame reçu pour upload :")
-        print(df.head())  # Affiche les premières lignes du DataFrame pour vérification
+        print(df.head())
         
-        # Conversion du DataFrame en CSV dans un StringIO
-        csv_buffer = StringIO()
-        df.to_csv(csv_buffer, index=False)
+        bucket_url = f"{bucket_base_url}{processed_key}"
         
-        # Réinitialisation du pointeur pour l'envoi
-        csv_buffer.seek(0)
-        
-        # Affichage des 100 premiers caractères pour vérification
-        print(f"Uploading to {processed_key} with data: {csv_buffer.getvalue()[:100]}")
-        
-        # Chargement du fichier sur S3
-        s3_client.put_object(Bucket=bucket_name, Key=processed_key, Body=csv_buffer.getvalue())
-        
+        # Load file to S3
+        df.write.format("parquet").partitionBy("year", "month").save(bucket_url, mode="append")
+                
         print(f"Processed data uploaded to {processed_key}")
     except Exception as e:
         print(f"Error uploading processed data: {e}")

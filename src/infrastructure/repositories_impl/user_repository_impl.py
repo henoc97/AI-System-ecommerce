@@ -8,9 +8,9 @@ class UserRepositoryImpl(UserRepository):
     def __init__(self) -> None:
         self.query_executor = make_query()
     
-    def get_all_users(self) -> list[dict]:
+    def get_all_users(self, last_run_time) -> list[dict]:
         try:
-            query = """SELECT * FROM "User";"""
+            query = f"""SELECT * FROM "User" WHERE updatedAt > {last_run_time};"""
             result = self.query_executor.execute(query)
             return result
         except:

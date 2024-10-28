@@ -1,20 +1,11 @@
-import pandas as pd
 
+from pyspark.sql.functions import col, when, lit, year, month, dayofmonth, hour
+from pyspark.sql import functions as F
 from domain.repositories.enums.user_interaction import UserActivityAction
 
-def transform_interaction(df: pd.DataFrame) -> pd.DataFrame | None:
-    # Inital df columns : ['id', 'userId', 'action', 'productId', 'created_at']
+def transform_interaction(df):
+    # Inital df columns : ['id', 'userId', 'action', 'productId', 'createdAt']
     try:
-        # Calculate the number of view product, add to cart and purchase per user
-        df['view_product_count'] = df[df['action'] == UserActivityAction.VIEW_PRODUCT].groupby('userId')['action'].transform('count')
-        df['add_to_cart_count'] = df[df['action'] == UserActivityAction.ADD_TO_CART].groupby('userId')['action'].transform('count')
-        df['purchase_count'] = df[df['action'] == UserActivityAction.PURCHASE].groupby('userId')['action'].transform('count')
-        
-        # Fill the NaN values with 0
-        df[['view_product_count', 'add_to_cart_count', 'purchase_count']] = df[
-            ['view_product_count', 'add_to_cart_count', 'purchase_count']
-        ].fillna(0)
-
         # Encode the action
         action_mapping = {
             UserActivityAction.VIEW_PRODUCT: 1,
@@ -22,18 +13,41 @@ def transform_interaction(df: pd.DataFrame) -> pd.DataFrame | None:
             UserActivityAction.PURCHASE: 3,
             UserActivityAction.OTHER: 0
         }
-        df['action_encoded'] = df['action'].map(action_mapping)
-
-        # Extract the hour, day, month and year of the interaction
-        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
-        df['hour'] = df['created_at'].dt.hour
-        df['day'] = df['created_at'].dt.day
-        df['month'] = df['created_at'].dt.month
-        df['year'] = df['created_at'].dt.year
+        
+        # UserActivity Action
+        df = df.withColumn(
+            "view_product_count",
+            when(col("action") == UserActivityAction.VIEW_PRODUCT, 1).otherwise(0)
+        ).withColumn(
+            "add_to_cart_count",
+            when(col("action") == UserActivityAction.ADD_TO_CART, 1).otherwise(0)
+        ).withColumn(
+            "purchase_count",
+            when(col("action") == UserActivityAction.PURCHASE, 1).otherwise(0)
+        )
+        
+        df = df.groupby("userId").agg(
+            F.sum("view_product_count").alias("view_product_count"),
+            F.sum("add_to_cart_count").alias("add_to_cart_count"),
+            F.sum("purchase_count").alias("purchase_count")
+        )
+        
+        df = df.withColumn("action_encoded", when(col("action") == UserActivityAction.VIEW_PRODUCT, lit(1))
+                                            .when(col("action") == UserActivityAction.ADD_TO_CART, lit(2))
+                                            .when(col("action") == UserActivityAction.PURCHASE, lit(3))
+                                            .otherwise(0))
+        
+        df = df.withColumn("created_at", F.to_timestamp("createdAt", "yyyy-MM-dd'T'HH:mm:ss"))
+        df = df.withColumn("hour", hour("createdAt"))
+        df = df.withColumn("day", dayofmonth("createdAt"))
+        df = df.withColumn("month", month("createdAt"))
+        df = df.withColumn("month", month("createdAt"))
+        df = df.withColumn("year", year("createdAt"))
         
         print("Interaction transformed successfully:")
-        print(df.head())
+        df.show(5)
         return df
+    
     except Exception as e:
         print(f"Error transforming interaction: {e}")
         return None

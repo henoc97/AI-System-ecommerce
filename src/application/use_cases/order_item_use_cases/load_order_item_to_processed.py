@@ -13,8 +13,8 @@ class LoadOrderItemToProcessed:
     """
     Load the order items to the processed layer
     """
-    def execute(self):
+    def execute(self, last_run_time):
         raw_key = 'raw/order_items/order_items.csv'
         processed_key = 'processed/order_items/order_items.csv'
         transform_func = transform_order_item
-        return transform_raw_to_processed_pipeline(raw_key, processed_key, transform_func)
+        return transform_raw_to_processed_pipeline(raw_key, processed_key, transform_func, last_run_time)

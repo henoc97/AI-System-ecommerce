@@ -6,5 +6,5 @@ class OrderItemRepository(ABC):
     """
 
     @abstractmethod
-    def get_all_order_items(self) -> list[dict]:
+    def get_all_order_items(self, last_run_time) -> list[dict]:
         pass

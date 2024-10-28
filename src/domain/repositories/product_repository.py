@@ -6,5 +6,5 @@ class ProductRepository(ABC):
     """
     
     @abstractmethod
-    def get_all_products(self) -> list[dict]:
+    def get_all_products(self, last_run_time) -> list[dict]:
         pass

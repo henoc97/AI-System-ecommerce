@@ -6,7 +6,7 @@ class UserRepository(ABC):
     """
 
     @abstractmethod
-    def get_all_users(self) -> list[dict]:
+    def get_all_users(self, last_run_time) -> list[dict]:
         pass
 
     # @abstractmethod

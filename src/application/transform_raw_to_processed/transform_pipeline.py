@@ -8,10 +8,10 @@ from infrastructure.data_lake.setup.download_raw_data import download_raw_data
 from infrastructure.data_lake.setup.upload_processed_data import upload_processed_data
 
 @task
-def extract(raw_key: str):
+def extract(raw_key: str, last_run_time):
     logger.info(f"Extracting data with raw_key: {raw_key}")
     try:
-        data = download_raw_data(path_key=raw_key)
+        data = download_raw_data(raw_key, last_run_time)
         logger.info(f"Extracted data: {data}")
         return data
     except Exception as e:
@@ -41,9 +41,9 @@ def load(df, processed_key):
         raise
 
 @flow(name="Transform Raw to Processed Pipeline")
-def transform_raw_to_processed_pipeline(raw_key, processed_key, transform_function):
+def transform_raw_to_processed_pipeline(raw_key, processed_key, transform_function, last_run_time):
     logger.info("Starting pipeline")
-    raw_data = extract(raw_key)
+    raw_data = extract(raw_key, last_run_time)
     transformed_data = transform(transform_function, raw_data)
     load(transformed_data, processed_key)
     logger.info("Pipeline finished")

@@ -8,9 +8,9 @@ class ReviewRepositoryImpl(ReviewsRepository):
     def __init__(self):
         self.query_executor = make_query()
 
-    def get_all_reviews(self) -> list[dict]:
+    def get_all_reviews(self, last_run_time) -> list[dict]:
         try:
-            query = """SELECT * FROM "Review";"""
+            query = f"""SELECT * FROM "Review" WHERE updatedAt > {last_run_time};"""
             reviews = self.query_executor.execute(query)
             return reviews
         except Exception as e:

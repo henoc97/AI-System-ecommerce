@@ -1,8 +1,7 @@
 
 
-from application.helper.to_csv import preprocess_data
 from application.services.interaction_servive import InteractionServices
-from infrastructure.data_lake.setup.automate_ingestion import upload_file_to_s3
+from application.transform_data_to_datalake_raw.transform_pipeline import extr_load_data_to_datalake_pipeline
 from infrastructure.repositories_impl.intercation_repository_impl import InteractionRepositoryImpl
 
 
@@ -11,13 +10,10 @@ class LoadInteractionToDatalake:
         interaction_repository = InteractionRepositoryImpl()
         self.interaction_services = InteractionServices(interaction_repository)
         
-    def execute(self):
+    def execute(self, last_run_time):
         try:
-            interactions = self.interaction_services.get_all_interactions()
-            output_file = 'src/infrastructure/data_lake/raw/interactions/interactions.csv'
-            cols = ['id', 'userId', 'action', 'productId', 'created_at']
-            preprocess_data(interactions, cols, output_file)
-            upload_file_to_s3(output_file, 'raw/interactions')
+            get_data = self.interaction_services.get_all_interactions
+            extr_load_data_to_datalake_pipeline(get_data, 'raw/interactions', last_run_time)
         except Exception as e:
             print(f"Error loading interactions to datalake: {e}")
             

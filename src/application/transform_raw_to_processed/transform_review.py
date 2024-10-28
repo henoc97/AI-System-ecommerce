@@ -1,38 +1,54 @@
-import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, lower, regexp_replace, count, Window, dayofmonth, weekofyear, month, lit
 from transformers import pipeline
 
-# NPL hugging face pipeline : sentiment-analysis
+# Initialiser Spark
+spark = SparkSession.builder.appName("ReviewTransformation").getOrCreate()
+
+# Chargement du modèle de sentiment Hugging Face
 sentiment_analyzer = pipeline('sentiment-analysis', model="nlptown/bert-base-multilingual-uncased-sentiment")
 
-
-def transform_review(df: pd.DataFrame) -> pd.DataFrame | None:
+def transform_review(df):
     try:
-        # Calculate the average rating per product
-        df['average_rating'] = df.groupby('productId')['rating'].transform('mean')
+        # Calcul de la note moyenne par produit
+        avg_rating = df.groupBy("productId").agg({"rating": "mean"}).withColumnRenamed("avg(rating)", "average_rating")
+        df = df.join(avg_rating, on="productId", how="left")
 
-        # Clean the comment
-        df['comment'] = df['comment'].fillna('')
-        df['comment_cleaned'] = df['comment'].str.lower().str.replace(r'[^a-z\s]', '', regex=True)
+        # Nettoyage des commentaires
+        df = df.withColumn("comment", when(col("comment").isNull(), "").otherwise(col("comment")))
+        df = df.withColumn("comment_cleaned", lower(regexp_replace(col("comment"), r'[^a-z\s]', '')))
 
-        # Get the sentiment of the comment
-        df['sentiment'] = df['comment_cleaned'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
-        df['sentiment_score'] = df['comment_cleaned'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
-        
-        # Calculate the number of reviews per user
-        df['reviews_by_user'] = df.groupby('userId')['id'].transform('count')
+        # Extraction des commentaires pour la transformation en DataFrame Pandas
+        comments_df = df.select("id", "comment_cleaned").toPandas()
 
-        # Extract the day, week and month of the review
-        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
-        df['day'] = df['created_at'].dt.day
-        df['week'] = df['created_at'].dt.isocalendar().week
-        df['month'] = df['created_at'].dt.month
+        # Analyse de sentiment en bloc
+        comments_df['sentiment'] = comments_df['comment_cleaned'].apply(lambda x: sentiment_analyzer(x)[0]['label'])
+        comments_df['sentiment_score'] = comments_df['comment_cleaned'].apply(lambda x: sentiment_analyzer(x)[0]['score'])
 
-        # Flag the high quality reviews
-        df['is_high_quality'] = (df['verified'] == True) & (df['flagged'] == False)
-        
+        # Conversion du DataFrame Pandas avec sentiments en DataFrame Spark et jointure
+        sentiments_spark_df = spark.createDataFrame(comments_df[['id', 'sentiment', 'sentiment_score']])
+        df = df.join(sentiments_spark_df, on="id", how="left")
+
+        # Nombre de critiques par utilisateur
+        df = df.withColumn("reviews_by_user", count("id").over(Window.partitionBy("userId")))
+
+        # Extraction du jour, de la semaine et du mois de la création de la critique
+        df = df.withColumn("created_at", col("created_at").cast("timestamp"))
+        df = df.withColumn("day", dayofmonth("created_at"))
+        df = df.withColumn("week", weekofyear("created_at"))
+        df = df.withColumn("month", month("created_at"))
+
+        # Indicateur des critiques de haute qualité
+        df = df.withColumn("is_high_quality", (col("verified") == True) & (col("flagged") == False))
+
         print("Review transformed successfully:")
-        print(df.head())
+        df.show(5)
         return df
+
     except Exception as e:
         print(f"Error transforming review: {e}")
         return None
+
+# Exemple d'utilisation
+# df_spark = spark.read.csv("path_to_your_file.csv", header=True, inferSchema=True)
+# transform_review(df_spark)

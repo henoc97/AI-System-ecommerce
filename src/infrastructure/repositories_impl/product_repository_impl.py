@@ -8,9 +8,9 @@ class ProductRepositoryImpl(ProductRepository):
     def __init__(self) -> None:
         self.query_executor = make_query()
     
-    def get_all_products(self) -> list[dict]:
+    def get_all_products(self, last_run_time) -> list[dict]:
         try:
-            query = """SELECT * FROM "Product";"""
+            query = f"""SELECT * FROM "Product" WHERE updatedAt > {last_run_time};"""
             result = self.query_executor.execute(query)
             return result
         except Exception as e:

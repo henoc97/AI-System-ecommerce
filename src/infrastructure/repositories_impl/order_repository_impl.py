@@ -8,9 +8,9 @@ class OrderRepositoryImpl(OrderRepository):
     def __init__(self) -> None:
         self.query_executor = make_query()
         
-    def get_all_orders(self) -> list[dict]:
+    def get_all_orders(self, last_run_time) -> list[dict]:
         try:
-            query = """SELECT * FROM "Order";"""
+            query = f"""SELECT * FROM "Order" WHERE updatedAt > {last_run_time};"""
             orders = self.query_executor.execute(query)
             return orders
         except Exception as e:

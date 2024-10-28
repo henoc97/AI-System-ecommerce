@@ -9,5 +9,5 @@ class ReviewsRepository(ABC):
     """
 
     @abstractmethod
-    def get_all_reviews(self) -> list[dict]:
+    def get_all_reviews(self, last_run_time) -> list[dict]:
         pass

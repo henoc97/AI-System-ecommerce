@@ -8,9 +8,9 @@ class OrderItemRepositoryImpl(OrderItemRepository):
     def __init__(self):
         self.query_executor = make_query()
 
-    def get_all_order_items(self) -> list[dict]:
+    def get_all_order_items(self, last_run_time) -> list[dict]:
         try:
-            query = """SELECT * FROM "OrderItem";"""
+            query = f"""SELECT * FROM "OrderItem" WHERE updatedAt > {last_run_time};"""
             order_items = self.query_executor.execute(query)
             return order_items
         except Exception as e:

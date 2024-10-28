@@ -13,8 +13,8 @@ class LoadReviewToProcessed:
     """
     Load the reviews to the processed layer
     """
-    def execute(self):
+    def execute(self, last_run_time):
         raw_key = 'raw/reviews/reviews.csv'
         processed_key = 'processed/reviews/reviews.csv'
         transform_func = transform_review
-        return transform_raw_to_processed_pipeline(raw_key, processed_key, transform_func)
+        return transform_raw_to_processed_pipeline(raw_key, processed_key, transform_func, last_run_time)

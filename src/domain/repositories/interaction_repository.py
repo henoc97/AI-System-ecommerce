@@ -9,5 +9,5 @@ class InteractionRepository(ABC):
     """
 
     @abstractmethod
-    def get_all_interactions(self) -> list[dict]:
+    def get_all_interactions(self, last_run_time) -> list[dict]:
         pass

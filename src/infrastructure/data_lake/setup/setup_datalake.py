@@ -1,10 +1,13 @@
+import os
 import boto3
 
+
+s3_endpoint = os.getenv("S3_ENDPOINT")
 # Create an S3 client with a specified endpoint URL
-s3 = boto3.client("s3", endpoint_url="http://localhost:4566")
+s3 = boto3.client("s3", endpoint_url=s3_endpoint)
 
 # Define the name of the bucket to be created
-bucket_name = "ecommerce-datalake"
+bucket_name = os.getenv("BUCKET_NAME")
 
 # Create the S3 bucket
 s3.create_bucket(Bucket=bucket_name)

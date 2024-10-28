@@ -8,5 +8,5 @@ class OrderRepository(ABC):
     """
 
     @abstractmethod
-    def get_all_orders(self) -> list[dict]:
+    def get_all_orders(self, last_run_time) -> list[dict]:
         pass

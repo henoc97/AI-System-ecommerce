@@ -1,43 +1,52 @@
-import pandas as pd
 
+from pyspark.sql.functions import col, avg, rank, count, year, month, dayofmonth, weekofyear
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 from domain.repositories.enums.order_status import OrderStatus
+from domain.repositories.enums.shipping_method import ShippingMethod
 
-def transform_order(df: pd.DataFrame) -> pd.DataFrame | None:
+def transform_order(df):
     # Inital df columns : ['id', 'userId', 'shopId', 'status', 'totalAmount', 'paymentId', 'trackingNumber', 'shippingMethod', 'createdAt', 'updatedAt']
     try:
-        
+                
         # Transform the status to the enum
-        df['is_completed'] = df['status'] == OrderStatus.DELIVERED.value
+        df = df.withColumn("is_completed", col("status") == OrderStatus.DELIVERED.value)
         
-        # Calculate the average order amount
-        average_order_amount = df['totalAmount'].mean()
-        df['average_order_amount'] = average_order_amount
-        
-        # Calculate the percentile of the order amount
-        df['order_amount_percentile'] = df['totalAmount'].rank(pct=True)
-        
-        # Calculate the number of orders per user and the average spend by user
-        order_count_by_user = df.groupby('userId')['id'].transform('count')
-        df['order_count_by_user'] = order_count_by_user
-        df['average_spend_by_user'] = df.groupby('userId')['totalAmount'].transform('mean')
-        
-        # Calculate the processing time
-        df['createdAt'] = pd.to_datetime(df['createdAt'], errors='coerce')
-        df['updatedAt'] = pd.to_datetime(df['updatedAt'], errors='coerce')
-        df['processing_time'] = (df['updatedAt'] - df['createdAt']).dt.days
-        
-        # Calculate the shipping method
-        df['shipping_method_encoded'] = df['shippingMethod'].astype('category').cat.codes
-        
-        # Extract the day, week and month of the order
-        df['day'] = df['createdAt'].dt.day
-        df['week'] = df['createdAt'].dt.isocalendar().week
-        df['month'] = df['createdAt'].dt.month
-        df['year'] = df['createdAt'].dt.year
-        
+        # Calcul de la moyenne du montant total de commande
+        avg_order_amount = df.agg(avg("totalAmount").alias("average_order_amount")).collect()[0]["average_order_amount"]
+        df = df.withColumn("average_order_amount", F.lit(avg_order_amount))
+
+        # Calcul du percentile du montant de la commande
+        window_spec = Window.orderBy("totalAmount")
+        df = df.withColumn("order_amount_percentile", rank().over(window_spec) / df.count())
+
+        # Calcul du nombre de commandes par utilisateur et de la dépense moyenne par utilisateur
+        order_count_by_user = df.groupBy("userId").agg(count("id").alias("order_count_by_user"),
+                                                       avg("totalAmount").alias("average_spend_by_user"))
+        df = df.join(order_count_by_user, on="userId", how="left")
+
+        # Calcul du temps de traitement
+        df = df.withColumn("createdAt", F.to_timestamp("createdAt"))
+        df = df.withColumn("updatedAt", F.to_timestamp("updatedAt"))
+        df = df.withColumn("processing_time", (F.col("updatedAt").cast("long") - F.col("createdAt").cast("long")) / (24 * 3600))
+
+        # Encodage de la méthode de livraison
+        shipping_method_indexer = F.when(F.col("shippingMethod") == ShippingMethod.STANDARD, 0) \
+                                   .when(F.col("shippingMethod") == ShippingMethod.EXPRESS, 1) \
+                                   .otherwise(2)
+        df = df.withColumn("shipping_method_encoded", shipping_method_indexer)
+
+        # Extraction des informations de date
+        df = df.withColumn("day", dayofmonth("createdAt")) \
+               .withColumn("week", weekofyear("createdAt")) \
+               .withColumn("month", month("createdAt")) \
+               .withColumn("year", year("createdAt"))
+
+        # Affichage du DataFrame transformé
         print("Order transformed successfully:")
-        print(df.head())
+        df.show(5)
         return df
+    
     except Exception as e:
         print(f"Error transforming order item: {e}")
         return None

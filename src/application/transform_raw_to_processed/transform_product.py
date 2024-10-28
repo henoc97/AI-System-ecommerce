@@ -1,41 +1,48 @@
-import pandas as pd
-import numpy as np
+from pyspark.sql.functions import col, when, lower, regexp_replace, datediff, current_date, lit
 from sklearn.feature_extraction.text import TfidfVectorizer
-from datetime import datetime
+import pandas as pd
 
-def transform_product(df: pd.DataFrame) -> pd.DataFrame:
-    # Inital df columns : ['id', 'name', 'description', 'price', 'categoryId', 'stock', 'shopId', 'created_at', 'updated_at', 'vendorId']
+def transform_product(df):
     try:
-        # Remove special characters from the name column
-        df['name'] = df['name'].str.lower().str.replace(r'[^a-zA-Z0-9\s]', '', regex=True)
+        # 1. Suppression des caractères spéciaux dans la colonne "name"
+        df = df.withColumn("name", lower(regexp_replace(col("name"), r'[^a-zA-Z0-9\s]', '')))
         
-        # NLP preprocessing for the description column
-        # Fill missing values in the description column with an empty string
-        df['description'] = df['description'].fillna('')
-        # Vectorize the description column
+        # 2. Prétraitement NLP pour la colonne "description" en utilisant TF-IDF
+        # Extraction de la colonne "description" pour transformation en Pandas
+        descriptions = df.select("id", "description").fillna("").toPandas()
+        
+        # Calcul du TF-IDF
         vectorizer = TfidfVectorizer(stop_words=['english', 'french'])
-        tfidf_matrix = vectorizer.fit_transform(df['description'])
+        tfidf_matrix = vectorizer.fit_transform(descriptions['description'])
         df_tfidf = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
-        df = pd.concat([df, df_tfidf], axis=1)
+        df_tfidf['id'] = descriptions['id']
+        
+        # Conversion du DataFrame TF-IDF en DataFrame Spark et jointure sur "id"
+        df_tfidf_spark = df.sql_ctx.createDataFrame(df_tfidf)  # Utilisation de `sql_ctx` pour créer directement depuis le contexte de `df`
+        df = df.join(df_tfidf_spark, on="id", how="left")
 
-        # Create price categories based on the price with tax
-        df['price_with_tax'] = df['price'] * 1.2
-        df['price_category'] = pd.cut(df['price_with_tax'], bins=[0, 50, 200, np.inf], labels=['low', 'medium', 'high'])
-        
-        # Create a boolean column to indicate if the product is in stock
-        df['in_stock'] = df['stock'] > 0
-        
-        # Calculate the product age
-        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
-        df['product_age'] = (datetime.now() - df['created_at']).dt.days
+        # 3. Création des catégories de prix
+        df = df.withColumn("price_with_tax", col("price") * 1.2)
+        df = df.withColumn("price_category", 
+                           when(col("price_with_tax") <= 50, "low")
+                           .when((col("price_with_tax") > 50) & (col("price_with_tax") <= 200), "medium")
+                           .otherwise("high"))
 
-        # Calculate the updated frequency
-        df['updated_at'] = pd.to_datetime(df['updated_at'], errors='coerce')
-        df['updated_frequency'] = (datetime.now() - df['updated_at']).dt.days / (df['product_age'] + 1)
-        
+        # 4. Indicateur de stock
+        df = df.withColumn("in_stock", col("stock") > 0)
+
+        # 5. Calcul de l'âge du produit
+        df = df.withColumn("created_at", col("created_at").cast("timestamp"))
+        df = df.withColumn("product_age", datediff(current_date(), col("created_at")))
+
+        # 6. Calcul de la fréquence de mise à jour
+        df = df.withColumn("updated_at", col("updated_at").cast("timestamp"))
+        df = df.withColumn("updated_frequency", datediff(current_date(), col("updated_at")) / (col("product_age") + lit(1)))
+
         print("Product dataframe after successful transformation:")
-        print(df.head())
+        df.show(5)
         return df
+
     except Exception as e:
         print(f"Error transforming the product dataframe: {e}")
         return None

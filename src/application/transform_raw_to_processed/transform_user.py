@@ -1,37 +1,46 @@
-
-
-from datetime import datetime
-import pandas as pd
-
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, regexp_replace, trim, hash, lit, current_date, datediff
+from pyspark.sql.types import IntegerType
 from domain.repositories.enums.user_role import UserRole
 
 
-def transform_user(df: pd.DataFrame) -> pd.DataFrame | None:
+def transform_user(df):
     try:
-        # Cleaning the name
-        df['name'] = df['name'].str.strip().str.title()
-        df = df.drop_duplicates(subset=['id', 'name'])  # Drop duplicates based on id and name
-        
-        # Anonymize the email
-        df['email'] = df['email'].apply(lambda x: hash(x))  # Replace emails by hash for anonymization
-        
-        # Encode the role
+        # 1. Nettoyage des noms : suppression des espaces et mise en majuscule des premières lettres
+        df = df.withColumn("name", trim(regexp_replace(col("name"), r'^\s+|\s+$', '')))
+        df = df.withColumn("name", col("name").alias("name"))
+
+        # Suppression des doublons en utilisant Spark
+        df = df.dropDuplicates(["id", "name"])
+
+        # 2. Anonymisation de l'email en utilisant un hash
+        df = df.withColumn("email", hash(col("email")))
+
+        # 3. Encodage des rôles d'utilisateur
         role_mapping = {UserRole.CLIENT: 1, UserRole.ADMIN: 2, UserRole.SELLER: 3}
-        df['role_encoded'] = df['role'].map(role_mapping)
-        
-        # Calculate the customer age and segment
-        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
-        df['customer_age'] = (datetime.now() - df['created_at']).dt.days
-        df['segment'] = pd.cut(df['customer_age'], bins=[0, 180, 365, float('inf')], labels=['new', 'regular', 'loyal'])
-        
-        # Track the updates
-        df['updated_at'] = pd.to_datetime(df['updated_at'], errors='coerce')
-        df['days_since_update'] = (datetime.now() - df['updated_at']).dt.days
-        df['is_active'] = df['days_since_update'] < 30  # Mark as active if updated in the last 30 days
-        
+        role_mapping_expr = when(col("role") == UserRole.CLIENT, lit(1)) \
+            .when(col("role") == UserRole.ADMIN, lit(2)) \
+            .when(col("role") == UserRole.SELLER, lit(3)) \
+            .otherwise(lit(None))
+        df = df.withColumn("role_encoded", role_mapping_expr)
+
+        # 4. Calcul de l'ancienneté du client en jours et segmentation
+        df = df.withColumn("created_at", col("created_at").cast("timestamp"))
+        df = df.withColumn("customer_age", datediff(current_date(), col("created_at")))
+        df = df.withColumn("segment",
+                           when(col("customer_age") <= 180, lit("new"))
+                           .when((col("customer_age") > 180) & (col("customer_age") <= 365), lit("regular"))
+                           .otherwise(lit("loyal")))
+
+        # 5. Suivi des mises à jour
+        df = df.withColumn("updated_at", col("updated_at").cast("timestamp"))
+        df = df.withColumn("days_since_update", datediff(current_date(), col("updated_at")))
+        df = df.withColumn("is_active", col("days_since_update") < 30)  # Actif si mis à jour dans les 30 derniers jours
+
         print("User transformed successfully:")
-        print(df.head())
+        df.show(5)
         return df
+
     except Exception as e:
         print(f"Error transforming user: {e}")
         return None
