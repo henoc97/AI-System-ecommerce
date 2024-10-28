@@ -29,11 +29,3 @@ def upload_processed_data(df, processed_key):
     except Exception as e:
         print(f"Error uploading processed data: {e}")
 
-# # Exemple d'utilisation
-# df = pd.DataFrame({
-#     "id": [1, 2, 3],
-#     "name": ["Product 1", "Product 2", "Product 3"],
-#     "price": [100, 200, 300]
-# })
-
-# upload_processed_data(df, "processed/products/data.csv")
