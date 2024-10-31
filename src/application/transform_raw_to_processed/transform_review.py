@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, lower, regexp_replace, count, Window, dayofmonth, weekofyear, month, lit
+from pyspark.sql.functions import col, when, lower, regexp_replace, count, window, dayofmonth, weekofyear, month, lit
 from transformers import pipeline
 
 # Initialiser Spark
@@ -30,7 +30,7 @@ def transform_review(df):
         df = df.join(sentiments_spark_df, on="id", how="left")
 
         # Nombre de critiques par utilisateur
-        df = df.withColumn("reviews_by_user", count("id").over(Window.partitionBy("userId")))
+        df = df.withColumn("reviews_by_user", count("id").over(window.partitionBy("userId")))
 
         # Extraction du jour, de la semaine et du mois de la création de la critique
         df = df.withColumn("created_at", col("created_at").cast("timestamp"))

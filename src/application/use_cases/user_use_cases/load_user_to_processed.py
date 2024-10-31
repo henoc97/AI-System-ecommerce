@@ -2,19 +2,19 @@ import sys
 
 sys.path.append('/mnt/c/Users/amavi/projects-studio/ecommerce/AI-System/src')
 
-from application.transform_raw_to_processed.transform_pipeline import transform_raw_to_processed_pipeline
+from application.transform_raw_to_processed.transform_raw_processed_pipeline import TransformRawProcessedPipeline
 from application.transform_raw_to_processed.transform_user import transform_user
 
 
 class LoadUserToProcessed:
     def __init__(self):
-        pass
+        self.raw_to_processed = TransformRawProcessedPipeline()
     
     """
     Load the order items to the processed layer
     """
     def execute(self, last_run_time):
-        raw_key = 'raw/users/users.csv'
-        processed_key = 'processed/users/users.csv'
+        raw_key = 'raw/users'
+        processed_key = 'processed/users'
         transform_func = transform_user
-        return transform_raw_to_processed_pipeline(raw_key, processed_key, transform_func, last_run_time)
+        return self.raw_to_processed.run_pipeline(raw_key, processed_key, transform_func, last_run_time)

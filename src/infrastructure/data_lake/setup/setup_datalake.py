@@ -1,6 +1,9 @@
 import os
 import boto3
+from dotenv import load_dotenv
 
+# Charger les variables d'environnement
+load_dotenv()
 
 s3_endpoint = os.getenv("S3_ENDPOINT")
 # Create an S3 client with a specified endpoint URL
