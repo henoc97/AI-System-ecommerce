@@ -10,8 +10,9 @@ class UserRepositoryImpl(UserRepository):
     
     def get_all_users(self, last_run_time) -> list[dict]:
         try:
-            query = f'SELECT * FROM "User" WHERE "updatedAt" > \'{last_run_time}\';'
-            result = self.query_executor.execute(query)
+            query = 'SELECT * FROM "User" WHERE "updatedAt" > %s;'
+            params = (last_run_time,)
+            result = self.query_executor.execute(query, params=params)
             return result
         except:
             print("Erreur lors de la récupération des utilisateurs")

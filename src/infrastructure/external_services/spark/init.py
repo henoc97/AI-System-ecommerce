@@ -31,6 +31,8 @@ def init_spark():
         .config("spark.hadoop.fs.s3a.secret.key", secret_key) \
         .config("spark.hadoop.fs.s3a.path.style.access", "true") \
         .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false") \
+        .config("spark.ui.port", "0") \
+        .config("spark.jars.packages", "org.postgresql:postgresql:42.2.18") \
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider") \
         .config("spark.sql.sources.commitProtocolClass", "org.apache.spark.sql.execution.datasources.SQLHadoopMapReduceCommitProtocol") \
@@ -38,6 +40,12 @@ def init_spark():
         .config("spark.hadoop.fs.s3a.committer.staging.enabled", "true") \
         .config("spark.hadoop.fs.s3a.committer.staging.conflict-mode", "replace") \
         .config("spark.hadoop.fs.s3a.impl.disable.cache", "true") \
+        .config("spark.hadoop.metrics.namespace", "s3a") \
+        .config("spark.hadoop.metrics.sink.console.class", "org.apache.hadoop.metrics2.sink.ConsoleSink") \
+        .config("spark.hadoop.metrics.sink.console.period", "10") \
+        .config("spark.hadoop.metrics.sink.console.unit", "seconds") \
+        .config("spark.eventLog.gcMetrics.youngGenerationGarbageCollectors", "G1 Concurrent GC") \
+        .config("spark.eventLog.gcMetrics.oldGenerationGarbageCollectors", "G1 Old Generation") \
         .config("spark.driver.memory", "4g") \
         .config("spark.executor.memory", "4g") \
         .getOrCreate()

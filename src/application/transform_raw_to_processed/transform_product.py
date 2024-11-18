@@ -1,5 +1,6 @@
-from pyspark.sql.functions import col, when, lower, regexp_replace, datediff, current_date, lit
+from pyspark.sql.functions import col, when, lower, regexp_replace, datediff, current_date, lit, year, month, dayofmonth
 from sklearn.feature_extraction.text import TfidfVectorizer
+from pyspark.sql import functions as F
 import pandas as pd
 
 def transform_product(df):
@@ -32,15 +33,20 @@ def transform_product(df):
         df = df.withColumn("in_stock", col("stock") > 0)
 
         # 5. Calcul de l'âge du produit
-        df = df.withColumn("created_at", col("created_at").cast("timestamp"))
-        df = df.withColumn("product_age", datediff(current_date(), col("created_at")))
+        df = df.withColumn("created_at", col("createdAt").cast("timestamp"))
+        df = df.withColumn("product_age", datediff(current_date(), col("createdAt")))
 
         # 6. Calcul de la fréquence de mise à jour
-        df = df.withColumn("updated_at", col("updated_at").cast("timestamp"))
-        df = df.withColumn("updated_frequency", datediff(current_date(), col("updated_at")) / (col("product_age") + lit(1)))
+        df = df.withColumn("updated_at", col("updatedAt").cast("timestamp"))
+        df = df.withColumn("updated_frequency", datediff(current_date(), col("updatedAt")) / (col("product_age") + lit(1)))
 
+        df = df.withColumn("created_at", F.to_timestamp("createdAt", "yyyy-MM-dd'T'HH:mm:ss"))
+        df = df.withColumn("day", dayofmonth("created_at"))
+        df = df.withColumn("month", month("created_at"))
+        df = df.withColumn("month", month("created_at"))
+        df = df.withColumn("year", year("created_at"))
         print("Product dataframe after successful transformation:")
-        df.show(5)
+        print(df.show(5))
         return df
 
     except Exception as e:

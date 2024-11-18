@@ -10,8 +10,9 @@ class OrderItemRepositoryImpl(OrderItemRepository):
 
     def get_all_order_items(self, last_run_time) -> list[dict]:
         try:
-            query = f'SELECT * FROM "OrderItem" WHERE "updatedAt" > \'{last_run_time}\';'
-            order_items = self.query_executor.execute(query)
+            query = 'SELECT * FROM "OrderItem" WHERE "updatedAt" > %s;'
+            params = (last_run_time,)
+            order_items = self.query_executor.execute(query, params=params)
             return order_items
         except Exception as e:
             print(f"Error getting all order items: {e}")

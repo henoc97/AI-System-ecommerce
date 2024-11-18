@@ -8,8 +8,9 @@ class InteractionRepositoryImpl(InteractionRepository):
 
     def get_all_interactions(self, last_run_time) -> list[dict]:
         try:
-            query = f'SELECT * FROM "UserActivity" WHERE "updatedAt" > \'{last_run_time}\';'
-            interactions = self.query_executor.execute(query)
+            query = 'SELECT * FROM "UserActivity" WHERE "updatedAt" > %s;'
+            params = (last_run_time,)
+            interactions = self.query_executor.execute(query, params=params)
             return interactions
         except Exception as e:
             print(f"Error getting all interactions: {e}")

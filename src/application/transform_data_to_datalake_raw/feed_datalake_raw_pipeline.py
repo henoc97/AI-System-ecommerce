@@ -7,12 +7,12 @@ from infrastructure.external_services.spark.spark_s3_utils import SparkS3Utils
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+spark = init_spark()
 
 class FeedRawPipeline:
 
     def __init__(self):
-        self.spark = init_spark()
-        self.sparkS3Utils = SparkS3Utils(self.spark)
+        self.sparkS3Utils = SparkS3Utils(spark)
         
     @task
     def extract(self, get_data, last_run_time):

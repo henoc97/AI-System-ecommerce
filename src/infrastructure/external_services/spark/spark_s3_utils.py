@@ -44,6 +44,15 @@ class SparkS3Utils:
         except Exception as e:
             print(f"Error uploading processed data: {e}")
             
+    def upload_data_warehouse(self, df, process_key):
+        try:
+            
+            DATABASE_URI = "postgresql+psycopg2://username:password@localhost:5432/mydatabase"
+            engine = create_engine(DATABASE_URI)
+           
+        except Exception as e:
+            print(f"Error uploading data warehouse data: {e}")
+            
     def download_parquets(self, s3_key, last_run_time):
         """
             s3_key : path

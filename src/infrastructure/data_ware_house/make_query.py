@@ -1,5 +1,4 @@
-
-from infrastructure.database.connection import get_connection
+from infrastructure.data_ware_house.connection import get_connection
 
 class MakeQuery:
     def __init__(self):

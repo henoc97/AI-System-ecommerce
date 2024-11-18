@@ -10,8 +10,9 @@ class ReviewRepositoryImpl(ReviewsRepository):
 
     def get_all_reviews(self, last_run_time) -> list[dict]:
         try:
-            query = f'SELECT * FROM "Review" WHERE "updatedAt" > \'{last_run_time}\';'
-            reviews = self.query_executor.execute(query)
+            query = 'SELECT * FROM "Review" WHERE "updatedAt" > %s;'
+            params = (last_run_time,)
+            reviews = self.query_executor.execute(query, params=params)
             return reviews
         except Exception as e:
             print(f"Error getting all reviews: {e}")

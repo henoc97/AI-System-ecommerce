@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, lower, regexp_replace, count, window, dayofmonth, weekofyear, month, lit
+from pyspark.sql.functions import col, when, lower, regexp_replace, count, window, dayofmonth, weekofyear, month, year, lit
 from transformers import pipeline
+from pyspark.sql import Window
 
 # Initialiser Spark
 spark = SparkSession.builder.appName("ReviewTransformation").getOrCreate()
@@ -30,19 +31,21 @@ def transform_review(df):
         df = df.join(sentiments_spark_df, on="id", how="left")
 
         # Nombre de critiques par utilisateur
-        df = df.withColumn("reviews_by_user", count("id").over(window.partitionBy("userId")))
+        user_window = Window.partitionBy("userId")
+        df = df.withColumn("reviews_by_user", count("id").over(user_window))
 
         # Extraction du jour, de la semaine et du mois de la création de la critique
-        df = df.withColumn("created_at", col("created_at").cast("timestamp"))
+        df = df.withColumn("created_at", col("createdAt").cast("timestamp"))
         df = df.withColumn("day", dayofmonth("created_at"))
         df = df.withColumn("week", weekofyear("created_at"))
         df = df.withColumn("month", month("created_at"))
+        df = df.withColumn("year", year("created_at"))
 
         # Indicateur des critiques de haute qualité
         df = df.withColumn("is_high_quality", (col("verified") == True) & (col("flagged") == False))
 
         print("Review transformed successfully:")
-        df.show(5)
+        print(df.show(5))
         return df
 
     except Exception as e:
